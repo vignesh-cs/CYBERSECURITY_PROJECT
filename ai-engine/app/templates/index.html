@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cybersecurity Compliance System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🛡️ AI Cybersecurity Compliance System</h1>
+            <p>Automated threat detection and policy enforcement</p>
+        </header>
+
+        <main class="main-content">
+            <!-- File Upload Section -->
+            <section class="upload-section">
+                <h2>📁 Upload Threat Intelligence</h2>
+                <form id="upload-form" class="upload-form">
+                    <div class="form-group">
+                        <label for="file-input">Select File (JSON, Log, Text):</label>
+                        <input type="file" id="file-input" accept=".json,.log,.txt">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="threat-input">Or Enter Threat Description:</label>
+                        <textarea id="threat-input" placeholder="Describe the security threat..." rows="3"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="analyze-btn">🔍 Analyze Threat</button>
+                </form>
+            </section>
+
+            <!-- Terminal Output Section -->
+            <section class="terminal-section">
+                <h2>📟 Live Terminal Output</h2>
+                <div class="terminal-controls">
+                    <button onclick="fileUploader.clearTerminal()" class="terminal-btn">🗑️ Clear</button>
+                    <button onclick="copyTerminal()" class="terminal-btn">📋 Copy</button>
+                </div>
+                <div id="terminal-output" class="terminal-output">
+                    <div class="terminal-line">
+                        <span class="timestamp">[System]</span> 🚀 Terminal initialized. Ready for threats...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions Section -->
+            <section class="quick-actions">
+                <h2>⚡ Quick Analysis</h2>
+                <div class="action-buttons">
+                    <button onclick="analyzeExample('SMB')" class="action-btn">🔒 Analyze SMB Threat</button>
+                    <button onclick="analyzeExample('Phishing')" class="action-btn">🎣 Analyze Phishing</button>
+                    <button onclick="analyzeExample('Ransomware')" class="action-btn">💀 Analyze Ransomware</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>AI-Powered Cybersecurity Compliance &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/upload.js"></script>
+    <script>
+        function copyTerminal() {
+            const terminal = document.getElementById('terminal-output');
+            const text = terminal.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const timestamp = new Date().toLocaleTimeString();
+                fileUploader.addToTerminal('📋 Terminal output copied to clipboard');
+            });
+        }
+
+        function analyzeExample(type) {
+            const examples = {
+                'SMB': 'SMBv1 vulnerability detected allowing remote code execution',
+                'Phishing': 'Phishing email campaign targeting employees with fake login pages',
+                'Ransomware': 'Ransomware infection encrypting files with .locked extension'
+            };
+            
+            document.getElementById('threat-input').value = examples[type];
+            fileUploader.addToTerminal(`📝 Loaded ${type} example threat`);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+---
+- name: Disable SMBv1 protocol
+  hosts: all
+  become: yes
+  vars:
+    smbv1_disabled: true
+
+  tasks:
+    - name: Check if SMBv1 is enabled (Windows)
+      win_shell: Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol
+      register: smb_config
+      when: ansible_os_family == "Windows"
+
+    - name: Disable SMBv1 (Windows)
+      win_shell: |
+        Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+        Restart-Service LanmanServer -Force
+      when: 
+        - ansible_os_family == "Windows"
+        - smb_config.stdout | bool
+
+    - name: Check SMBv1 configuration (Linux)
+      shell: modprobe -c | grep smbd
+      register: smb_linux
+      ignore_errors: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Disable SMBv1 (Linux)
+      shell: |
+        echo "blacklist smbd" >> /etc/modprobe.d/blacklist.conf
+        update-initramfs -u
+      when: 
+        - ansible_os_family == "Debian"
+        - smb_linux.rc == 0
+
+    - name: Verify SMBv1 is disabled
+      win_shell: Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol
+      register: verify_smb
+      when: ansible_os_family == "Windows"
+
+    - name: Log result
+      debug:
+        msg: "SMBv1 successfully disabled"
+      when: verify_smb.stdout contains "False"

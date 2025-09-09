@@ -1,0 +1,11 @@
+text,label
+"Malicious phishing email detected",1
+"System security patch installed",0
+"Ransomware attack in progress",1
+"Normal user login activity",0
+"SQL injection attempt blocked",1
+"Regular database backup completed",0
+"DDoS attack from multiple sources",1
+"Software update successful",0
+"Credential stuffing attack detected",1
+"Firewall configuration updated",0

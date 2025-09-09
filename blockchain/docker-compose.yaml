@@ -1,0 +1,52 @@
+version: '2.4'
+
+services:
+  orderer.example.com:
+    image: hyperledger/fabric-orderer:2.5
+    environment:
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/config/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/config/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/config/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/config/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/ca.crt]
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=none
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/config/genesis.block
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+    ports:
+      - 7050:7050
+    volumes:
+      - ./config:/var/hyperledger/config
+    networks:
+      - fabric-net
+
+  peer0.org1.example.com:
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/config/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/var/hyperledger/config/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/var/hyperledger/config/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/var/hyperledger/config/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+      - CORE_METRICS_PROVIDER=prometheus
+    ports:
+      - 7051:7051
+      - 9443:9443
+    volumes:
+      - ./config:/var/hyperledger/config
+    depends_on:
+      - orderer.example.com
+    networks:
+      - fabric-net

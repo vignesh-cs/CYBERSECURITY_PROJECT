@@ -1,0 +1,26 @@
+text,label
+"Alert: Multiple failed login attempts from suspicious IP address",1
+"System update: All security patches successfully installed",0
+"Warning: Potential SQL injection attempt detected in web application",1
+"Info: User completed mandatory security awareness training",0
+"Critical: Ransomware signature detected in network traffic",1
+"Notification: New firewall rules implemented to enhance security",0
+"Alert: Unauthorized access to sensitive financial data",1
+"Report: Quarterly security audit completed with no major issues",0
+"Warning: DDoS attack originating from multiple botnet IPs",1
+"Status: Endpoint protection updated with latest virus definitions",0
+"Alert: Credential stuffing attack targeting user accounts",1
+"Info: Encryption successfully applied to database at rest",0
+"Critical: Zero-day vulnerability exploited in web server",1
+"Notification: Multi-factor authentication enabled for all admin accounts",0
+"Warning: Data leakage detected through unsecured API endpoint",1
+"Report: Incident response drill completed successfully",0
+"Alert: Privilege escalation attempt by compromised user account",1
+"Status: Network segmentation implemented per security policy",0
+"Critical: Advanced persistent threat activity detected in network",1
+"Info: Regular password rotation completed for service accounts",0
+"Warning: Social engineering attack targeting employees",1
+"Notification: Security information and event management system operational",0
+"Alert: Malicious insider attempting data theft",1
+"Report: Vulnerability assessment shows improved security posture",0
+"Critical: Unpatched vulnerability exploited in production environment",1

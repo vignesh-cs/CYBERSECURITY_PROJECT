@@ -1,0 +1,55 @@
+---
+- name: Update firewall rules
+  hosts: all
+  become: yes
+  vars:
+    blocked_ports: []
+    allowed_ips: []
+
+  tasks:
+    - name: Update Windows firewall rules
+      win_firewall_rule:
+        name: "Block port {{ item }}"
+        localport: "{{ item }}"
+        action: block
+        direction: in
+        protocol: tcp
+        state: present
+        enabled: yes
+      loop: "{{ blocked_ports }}"
+      when: ansible_os_family == "Windows"
+
+    - name: Update iptables rules (Linux)
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ item }}"
+        jump: DROP
+        comment: "Blocked by compliance system"
+      loop: "{{ blocked_ports }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Allow specific IP addresses (Windows)
+      win_firewall_rule:
+        name: "Allow IP {{ item }}"
+        remoteip: "{{ item }}"
+        action: allow
+        direction: in
+        state: present
+        enabled: yes
+      loop: "{{ allowed_ips }}"
+      when: ansible_os_family == "Windows"
+
+    - name: Allow specific IP addresses (Linux)
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        source: "{{ item }}"
+        jump: ACCEPT
+        comment: "Allowed by compliance system"
+      loop: "{{ allowed_ips }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Save iptables rules (Linux)
+      shell: iptables-save > /etc/iptables/rules.v4
+      when: ansible_os_family == "Debian"

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Compliance System</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>AI-Driven Cybersecurity Compliance</h1>
+            <nav>
+                <a href="#dashboard">Dashboard</a>
+                <a href="#compliance">Compliance Actions</a>
+                <a href="#policies">Policies</a>
+                <a href="#threats">Threat Intelligence</a>
+            </nav>
+        </header>
+
+        <main>
+            <section id="dashboard" class="active">
+                <h2>Security Dashboard</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Compliance Rate</h3>
+                        <div class="value" id="compliance-rate">98%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Threats</h3>
+                        <div class="value" id="active-threats">12</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Actions Today</h3>
+                        <div class="value" id="actions-today">47</div>
+                    </div>
+                </div>
+                <div class="charts">
+                    <canvas id="threatChart" width="400" height="200"></canvas>
+                    <canvas id="complianceChart" width="400" height="200"></canvas>
+                </div>
+            </section>
+
+            <section id="compliance">
+                <h2>Compliance Actions</h2>
+                <div class="filters">
+                    <input type="text" id="search-actions" placeholder="Search actions...">
+                    <select id="severity-filter">
+                        <option value="">All Severities</option>
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="CRITICAL">Critical</option>
+                    </select>
+                </div>
+                <table id="actions-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Policy</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="actions-body"></tbody>
+                </table>
+            </section>
+
+            <section id="policies">
+                <h2>Security Policies</h2>
+                <div class="policies-list" id="policies-list"></div>
+            </section>
+
+            <section id="threats">
+                <h2>Threat Intelligence</h2>
+                <div class="threat-feed" id="threat-feed"></div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Cybersecurity Compliance System &copy; 2024</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/compliance.js"></script>
+</body>
+</html>

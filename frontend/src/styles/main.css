@@ -1,0 +1,172 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+}
+
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+nav {
+    background: #34495e;
+    padding: 0.5rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+nav a:hover {
+    background: #3498db;
+}
+
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+section {
+    display: none;
+    background: white;
+    padding: 2rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+section.active {
+    display: block;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: #ecf0f1;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-card h3 {
+    color: #7f8c8d;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #f8f9fa;
+    font-weight: bold;
+}
+
+tr:hover {
+    background: #f8f9fa;
+}
+
+.filters {
+    margin: 1rem 0;
+    display: flex;
+    gap: 1rem;
+}
+
+input, select {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.policies-list, .threat-feed {
+    display: grid;
+    gap: 1rem;
+}
+
+.policy-card, .threat-card {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.threat-card.critical {
+    border-left-color: #e74c3c;
+}
+
+.threat-card.high {
+    border-left-color: #f39c12;
+}
+
+.threat-card.medium {
+    border-left-color: #f1c40f;
+}
+
+.threat-card.low {
+    border-left-color: #2ecc71;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background: #2c3e50;
+    color: white;
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .charts {
+        grid-template-columns: 1fr;
+    }
+    
+    nav {
+        text-align: center;
+    }
+    
+    nav a {
+        display: block;
+        margin: 0.5rem 0;
+    }
+}

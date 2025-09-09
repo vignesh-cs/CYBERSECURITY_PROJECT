@@ -1,0 +1,35 @@
+---
+- name: Block RDP port 3389
+  hosts: all
+  become: yes
+  vars:
+    rdp_port: 3389
+
+  tasks:
+    - name: Block RDP port on Windows
+      win_firewall_rule:
+        name: "Block RDP Port {{ rdp_port }}"
+        localport: "{{ rdp_port }}"
+        action: block
+        direction: in
+        protocol: tcp
+        state: present
+        enabled: yes
+      when: ansible_os_family == "Windows"
+
+    - name: Block RDP port on Linux
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ rdp_port }}"
+        jump: DROP
+        comment: "Block RDP port by compliance system"
+      when: ansible_os_family == "Debian"
+
+    - name: Save iptables rules
+      shell: iptables-save > /etc/iptables/rules.v4
+      when: ansible_os_family == "Debian"
+
+    - name: Log blocking action
+      debug:
+        msg: "RDP port {{ rdp_port }} blocked on {{ inventory_hostname }}"

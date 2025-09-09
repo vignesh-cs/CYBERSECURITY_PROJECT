@@ -1,0 +1,33 @@
+all:
+  children:
+    windows_servers:
+      hosts:
+        win-server-01:
+          ansible_host: 192.168.1.10
+          ansible_user: administrator
+          ansible_password: "{{ win_password }}"
+          ansible_connection: winrm
+          ansible_winrm_transport: basic
+          ansible_winrm_server_cert_validation: ignore
+
+    linux_servers:
+      hosts:
+        linux-server-01:
+          ansible_host: 192.168.1.20
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: /ansible/keys/ubuntu_rsa
+          ansible_connection: ssh
+
+    workstations:
+      hosts:
+        workstation-01:
+          ansible_host: 192.168.1.30
+          ansible_user: admin
+          ansible_password: "{{ workstation_password }}"
+          ansible_connection: winrm
+
+  vars:
+    ansible_winrm_transport: basic
+    ansible_winrm_message_encryption: auto
+    ansible_winrm_read_timeout_sec: 300
+    ansible_winrm_operation_timeout_sec: 300

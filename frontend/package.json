@@ -1,0 +1,22 @@
+{
+  "name": "compliance-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Cybersecurity Compliance System",
+  "main": "src/js/app.js",
+  "scripts": {
+    "build": "echo 'Frontend is static HTML, no build process needed'",
+    "test": "echo 'No tests configured'"
+  },
+  "dependencies": {
+    "chart.js": "^4.3.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "cybersecurity",
+    "compliance",
+    "blockchain",
+    "ai"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

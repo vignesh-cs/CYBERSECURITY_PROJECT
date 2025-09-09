@@ -1,0 +1,71 @@
+---
+- name: Isolate compromised endpoint
+  hosts: "{{ target_host }}"
+  become: yes
+  vars:
+    quarantine_network: "10.0.100.0/24"
+    quarantine_gateway: "10.0.100.1"
+
+  tasks:
+    - name: Block all outgoing traffic (Windows)
+      win_firewall_rule:
+        name: "Block all outgoing traffic"
+        direction: out
+        action: block
+        state: present
+        enabled: yes
+      when: ansible_os_family == "Windows"
+
+    - name: Block all outgoing traffic (Linux)
+      iptables:
+        chain: OUTPUT
+        jump: DROP
+        comment: "Isolation mode enabled"
+      when: ansible_os_family == "Debian"
+
+    - name: Change network configuration to quarantine
+      win_shell: |
+        $adapters = Get-NetAdapter
+        foreach ($adapter in $adapters) {
+            Remove-NetIPAddress -InterfaceIndex $adapter.ifIndex -Confirm:$false
+            New-NetIPAddress -InterfaceIndex $adapter.ifIndex `
+                -IPAddress "10.0.100.100" `
+                -PrefixLength 24 `
+                -DefaultGateway "10.0.100.1"
+            Set-DnsClientServerAddress -InterfaceIndex $adapter.ifIndex `
+                -ServerAddresses ("10.0.100.1")
+        }
+      when: ansible_os_family == "Windows"
+
+    - name: Change network configuration (Linux)
+      block:
+        - name: Backup current network config
+          copy:
+            src: /etc/network/interfaces
+            dest: /etc/network/interfaces.backup
+            remote_src: yes
+
+        - name: Apply quarantine network config
+          template:
+            src: templates/quarantine_interfaces.j2
+            dest: /etc/network/interfaces
+
+        - name: Restart networking
+          systemd:
+            name: networking
+            state: restarted
+      when: ansible_os_family == "Debian"
+
+    - name: Notify security team
+      uri:
+        url: "http://backend:3000/api/notifications"
+        method: POST
+        body:
+          message: "Endpoint {{ inventory_hostname }} has been isolated"
+          severity: "CRITICAL"
+          target: "security-team"
+        body_format: json
+
+    - name: Log isolation action
+      debug:
+        msg: "Endpoint {{ inventory_hostname }} successfully isolated"

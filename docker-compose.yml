@@ -1,0 +1,217 @@
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: compliance_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: securepassword123
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - compliance-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d compliance_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # CouchDB for Blockchain State Database
+  couchdb:
+    image: couchdb:3.1
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+    networks:
+      - compliance-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Orderer Service for Hyperledger Fabric
+  orderer:
+    image: hyperledger/fabric-orderer:2.2
+    environment:
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=false
+      - ORDERER_GENERAL_BOOTSTRAPMETHOD=file
+      - ORDERER_GENERAL_BOOTSTRAPFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:8443
+    ports:
+      - "7050:7050"
+      - "8443:8443"
+    volumes:
+      - ./blockchain/orderer:/var/hyperledger/orderer
+      - ./blockchain/config:/var/hyperledger/config
+    networks:
+      - compliance-net
+    healthcheck:
+      test: ["CMD", "echo", "Orderer health check - consider using netcat or custom script"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Hyperledger Blockchain Peer
+  blockchain:
+    build: ./blockchain
+    ports:
+      - "7051:7051"
+      - "7052:7052"  # Chaincode listener
+      - "7053:7053"  # Event service
+      - "9443:9443"  # Operations
+    environment:
+      - CORE_PEER_ID=peer0.compliance.example.com
+      - CORE_PEER_ADDRESS=blockchain:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=blockchain:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=blockchain:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=blockchain:7051
+      - CORE_PEER_LOCALMSPID=ComplianceMSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/config/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=compliance-net
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=password
+      - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+      - CORE_PEER_TLS_ENABLED=false
+    volumes:
+      - ./blockchain/config:/var/hyperledger/config
+      - ./blockchain/chaincode:/opt/gopath/src/github.com/chaincode
+      - blockchain_data:/var/hyperledger/production
+      - /var/run/docker.sock:/host/var/run/docker.sock
+    depends_on:
+      - couchdb
+      - orderer
+    networks:
+      - compliance-net
+    healthcheck:
+      test: ["CMD-SHELL", "peer channel list > /dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # AI Engine
+  ai-engine:
+    build: ./ai-engine
+    volumes:
+      - ./ai-engine/app:/app/app
+      - ./config:/config
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword123@postgres:5432/compliance_db
+      - BLOCKCHAIN_GATEWAY=http://backend:3000
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - compliance-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword123@postgres:5432/compliance_db
+      - FABRIC_CONFIG_PATH=/config
+      - NODE_ENV=production
+      - BLOCKCHAIN_PEER_ADDRESS=blockchain:7051
+      - BLOCKCHAIN_ORDERER_ADDRESS=orderer:7050
+    volumes:
+      - ./backend/src:/app/src
+      - ./config:/config
+      - ./blockchain/config:/var/hyperledger/config:ro
+    depends_on:
+      - postgres
+      - blockchain
+      - orderer
+    networks:
+      - compliance-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - API_URL=http://backend:3000
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    networks:
+      - compliance-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Enforcement Engine
+  enforcement:
+    build: ./enforcement
+    volumes:
+      - ./enforcement/ansible:/ansible
+      - ./config:/config
+      - ./blockchain/config:/var/hyperledger/config:ro
+    environment:
+      - ANSIBLE_CONFIG=/ansible/ansible.cfg
+      - BLOCKCHAIN_PEER_ADDRESS=blockchain:7051
+      - DATABASE_URL=postgresql://admin:securepassword123@postgres:5432/compliance_db
+    depends_on:
+      - blockchain
+      - backend
+    networks:
+      - compliance-net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  blockchain_data:
+    driver: local
+  couchdb_data:
+    driver: local
+
+networks:
+  compliance-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
