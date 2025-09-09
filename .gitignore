@@ -1,0 +1,9 @@
+venv/
+ai-engine/venv/
+ai-engine/app/models/
+__pycache__/
+*.log
+*.dll
+*.lib
+*.pt
+*.safetensors
